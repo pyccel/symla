@@ -188,4 +188,4 @@ class Kron(BasicOperator):
             return coeff*cls(*newargs)
         # ...
 
-        return cls(*args)
+        return cls(*args, evaluate=False)

@@ -12,8 +12,22 @@ def test_inverse_1():
     alpha, beta, gamma = [Symbol(i) for i in ['alpha', 'beta', 'gamma']]
 
     # .....................................
-    expr = Inverse(a)
-#    expr = Inverse(Kron(a,b))
+    assert(Inverse(a*b) == Inverse(b)*Inverse(a))
+    assert(Inverse(a*b*c) == Inverse(c)*Inverse(b)*Inverse(a))
+    assert(Inverse(a*b*c*d) == Inverse(d)*Inverse(c)*Inverse(b)*Inverse(a))
+
+    assert(Inverse(alpha*a*b) == Inverse(b)*Inverse(a)/alpha)
+    assert(Inverse(alpha*beta*a*b) == Inverse(b)*Inverse(a)/(alpha*beta))
+
+    assert(Inverse(Kron(a,b)) == Kron(Inverse(a), Inverse(b)))
+    assert(Inverse(Kron(a,b,c)) == Kron(Inverse(a), Inverse(b), Inverse(c)))
+    assert(Inverse(Kron(a,b,c,d)) == Kron(Inverse(a), Inverse(b), Inverse(c), Inverse(d)))
+
+    assert(Inverse(Kron(alpha*a,b)) == Kron(Inverse(a), Inverse(b))/alpha)
+    assert(Inverse(Kron(alpha*a,beta*b)) == Kron(Inverse(a), Inverse(b))/(alpha*beta))
+    assert(Inverse(Kron(alpha*a,beta*b,gamma*c)) == Kron(Inverse(a), Inverse(b), Inverse(c))/(alpha*beta*gamma))
+
+    expr = Inverse(a+b)
     print(expr)
 
 #######################################

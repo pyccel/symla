@@ -13,7 +13,7 @@ from sympy.core.decorators    import call_highest_priority
 from sympy.core.compatibility import is_sequence
 
 from sympde.calculus.core import BasicOperator
-from symla.kronecker      import Kron
+from symla.kronecker      import Kron, LinearOperator
 
 #==============================================================================
 class Inverse(BasicOperator):
@@ -43,9 +43,22 @@ class Inverse(BasicOperator):
 
         expr = _args[0]
 
-#        if isinstance(expr, Kron):
-#            args = [cls(a, evaluate=False) for a in expr.args]
-#            return Kron(*args)
+        if isinstance(expr, Kron):
+            args = [cls(a, evaluate=False) for a in expr.args]
+            return Kron(*args)
+
+        elif isinstance(expr, Mul):
+            linops = [i for i in expr.args if isinstance(i, (LinearOperator, Kron))]
+            coeffs = [i for i in expr.args if i not in linops]
+
+            linops = [cls(i) for i in linops]
+            linop = reduce(mul, linops[::-1])
+            if len(coeffs) > 0:
+                coeff = reduce(mul, coeffs)
+            else:
+                coeff = 1
+
+            return linop / coeff
 
         return cls(expr, evaluate=False)
 
