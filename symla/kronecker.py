@@ -104,18 +104,34 @@ class Matrix(LinearOperator):
     pass
 
 #==============================================================================
+# TODO treat the Zero case
 class Kron(BasicOperator):
     """
     """
-    is_scalar      = False
-    is_commutative = False
 
     def __new__(cls, *args, **options):
+        # (Try to) sympify args first
 
-        # If one argument is the zero vector, return 0
-        # TODO treat the Zero case
-#        if any([is_zero(arg) for arg in args]):
-#            return S.Zero
+        if options.pop('evaluate', True):
+            r = cls.eval(*args)
+        else:
+            r = None
+
+        if r is None:
+            return Basic.__new__(cls, *args, **options)
+        else:
+            return r
+
+    @classmethod
+    def eval(cls, *_args):
+
+        if not _args:
+            return
+
+        if len(_args) <= 1:
+            raise ValueError('Expecting at least two arguments')
+
+        args = _args
 
         krons = [i for i in args if isinstance(i, Kron)]
         if krons:
@@ -131,10 +147,6 @@ class Kron(BasicOperator):
         if all([ isinstance(arg, LinearOperator) or
                 (isinstance(arg, Mul) and all([isinstance(i, LinearOperator) for i in arg.args]))
                 for arg in args]):
-            return Basic.__new__(cls, *args)
-
-        evaluate = options.pop('evaluate', True)
-        if not evaluate:
             return Basic.__new__(cls, *args)
 
         args = list(args)
