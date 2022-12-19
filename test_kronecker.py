@@ -30,21 +30,14 @@ def test_kronecker_1():
     assert(Kron(a, Kron(b,c)) == Kron(a,b,c))
     assert(Kron(Kron(a,b), c) == Kron(a,b,c))
     assert(Kron(Kron(a+b,d), Kron(b,c)) == Kron(a, d, b, c) + Kron(b, d, b, c))
+
+    # Additional tests
+    assert(Kron(a+d*a, beta*b*c) == beta * Kron(a,b*c) + beta * Kron(d*a, b*c))
+    assert(Kron(alpha*a,Kron(b, gamma*c) + Kron(beta*b,d)) ==
+           alpha*beta*Kron(a,b,d) + alpha*gamma*Kron(a,b,c))
     # .....................................
 
 #######################################
 if __name__ == '__main__':
 
     test_kronecker_1()
-
-    # .....................................
-#    # TODO not working
-#    expr = Kron(a+d*a, beta*b*c)
-#    print(expr)
-#    print('')
-
-#    # TODO not working
-#    expr = Kron(alpha*a,Kron(b, gamma*c) + Kron(beta*b,d))
-#    print(expr)
-#    print('')
-    # .....................................
