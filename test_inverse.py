@@ -1,4 +1,5 @@
 from sympy import Symbol
+from sympy import Expr
 
 from symla.kronecker import FiniteVectorSpace
 from symla.kronecker import Matrix

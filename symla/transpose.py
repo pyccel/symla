@@ -31,7 +31,6 @@ class Transpose(BasicOperator):
 
         if not _args:
             return
-
         if not len(_args) == 1:
             raise ValueError('Expecting one argument')
 

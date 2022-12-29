@@ -1,15 +1,17 @@
-from sympy                    import Symbol
+from sympy                      import Symbol, Expr
 
-from symla.kronecker import FiniteVectorSpace
-from symla.kronecker import Matrix
-from symla.kronecker import Kron
+from symla.kronecker            import FiniteVectorSpace
+from symla.kronecker            import Matrix
+from symla.kronecker            import Vector
+from symla.kronecker            import Kron
 
 # ====================================================================
 def test_kronecker_1():
     V = FiniteVectorSpace('V')
+    v = Vector('v', V)
     a, b, c, d = [Matrix(i, V, V) for i in ['a', 'b', 'c', 'd']]
     alpha, beta, gamma = [Symbol(i) for i in ['alpha', 'beta', 'gamma']]
-
+    print(Kron(a+b,c))
     # .....................................
     # Kron can be called without evaluation
     assert(not(Kron(a, b+c, evaluate=False) == Kron(a,b) + Kron(a,c)))

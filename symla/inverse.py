@@ -16,6 +16,8 @@ class Inverse(BasicOperator):
         # (Try to) sympify args first
 
         if options.pop('evaluate', True):
+            args = [arg.expand() if hasattr(arg, 'expand') else arg
+                    for arg in args]
             r = cls.eval(*args)
         else:
             r = None
