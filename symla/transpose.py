@@ -1,15 +1,14 @@
 from operator  import mul
 from functools import reduce
 
-from sympy                    import Matrix as sp_Matrix
 from sympy.core               import Basic
-from sympy.core               import Mul
+from sympy.core               import Add, Mul, Pow
 
 from sympde.calculus.core import BasicOperator
 from symla.kronecker      import Kron, LinearOperator
 
 #==============================================================================
-class Inverse(BasicOperator):
+class Transpose(BasicOperator):
     """
     """
     def __new__(cls, *args, **options):
@@ -32,18 +31,26 @@ class Inverse(BasicOperator):
 
         if not _args:
             return
-
         if not len(_args) == 1:
             raise ValueError('Expecting one argument')
 
         expr = _args[0]
+        
+        if isinstance(expr, Transpose):
+            return _args[0].args[0]
 
         if isinstance(expr, Kron):
             args = [cls(a, evaluate=False) for a in expr.args]
             return Kron(*args)
 
+        elif isinstance(expr, Pow):
+            return cls(expr.base) ** expr.exp
+        
+        elif isinstance(expr, Add):
+            return reduce(Add, [cls(arg) for arg in expr.args])
+
         elif isinstance(expr, Mul):
-            linops = [i for i in expr.args if isinstance(i, (LinearOperator, Kron))]
+            linops = [i for i in expr.args if isinstance(i, (LinearOperator, Kron, Transpose))]
             coeffs = [i for i in expr.args if i not in linops]
 
             linops = [cls(i) for i in linops]
@@ -53,10 +60,10 @@ class Inverse(BasicOperator):
             else:
                 coeff = 1
 
-            return linop / coeff
+            return coeff * linop
 
         return cls(expr, evaluate=False)
 
     def _sympystr(self, printer):
         sstr = printer.doprint
-        return 'Inverse({arg})'.format(arg=sstr(self.args[0]))
+        return 'Trans({arg})'.format(arg=sstr(self.args[0]))

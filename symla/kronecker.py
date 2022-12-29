@@ -1,16 +1,12 @@
 from operator  import mul, add
 from functools import reduce
 
-from sympy                    import Indexed, sympify, Symbol
+from sympy                    import Symbol
 from sympy                    import Matrix as sp_Matrix
 from sympy                    import ImmutableDenseMatrix
 from sympy                    import cacheit
 from sympy.core               import Basic
-from sympy.core               import Add, Mul, Pow, Expr
-from sympy.core.containers    import Tuple
-from sympy.core.singleton     import S
-from sympy.core.decorators    import call_highest_priority
-from sympy.core.compatibility import is_sequence
+from sympy.core               import Add, Mul, Expr
 
 from sympde.calculus.core import BasicOperator
 
@@ -33,11 +29,12 @@ def is_zero(x):
 class FiniteVectorSpace(Basic):
     """
     """
-    def __new__(cls, name, shape=None):
+    def __new__(cls, name, dimension=None, field=None):
 
         obj = Basic.__new__(cls)
         obj._name  = name
-        obj._shape = shape
+        obj._dimension = dimension
+        obj._field = field
 
         return obj
 
@@ -46,8 +43,17 @@ class FiniteVectorSpace(Basic):
         return self._name
 
     @property
-    def shape(self):
-        return self._shape
+    def dimension(self):
+        return self._dimension
+
+    @property
+    def field(self):
+        return self._field
+    
+    @property
+    def dtype(self):
+        # TODO assign a data type for each field
+        pass
 
     def _sympystr(self, printer):
         sstr = printer.doprint
@@ -57,12 +63,31 @@ class FiniteVectorSpace(Basic):
         raise NotImplementedError('TODO')
 
     def __hash__(self):
-        return hash((self.name, self.shape))
+        return hash((self.name, self._dimension, self._field))
 
 #==============================================================================
 # TODO improve
 class Vector(Symbol):
-    pass
+    def __new__(cls, name, space=None, **assumptions):
+        obj = Symbol.__new__(cls, name)
+        obj._space = space
+        obj._discretizable = False
+        if assumptions.get('values'):
+            obj._values = assumptions.get('values')
+            # TODO validate values type and shape
+            obj._discretizable = True
+
+        return obj
+    
+    @property
+    def shape(self):
+        return None if self._space == None else self._space.dimension()
+
+    @property
+    def dtype(self):
+        return None if self._space == None else self._space.dtype()
+    
+
 
 #==============================================================================
 class LinearOperator(Symbol):
@@ -111,8 +136,9 @@ class Kron(BasicOperator):
 
     def __new__(cls, *args, **options):
         # (Try to) sympify args first
-
         if options.pop('evaluate', True):
+            args = [arg.expand() if hasattr(arg, 'expand') else arg
+                    for arg in args]
             r = cls.eval(*args)
         else:
             r = None
@@ -169,12 +195,13 @@ class Kron(BasicOperator):
         # ...
 
         # ... treate the case where there is and Mul node
-        mul_args = [arg for arg in args if isinstance(arg, Mul)]
+        mul_args = [arg for arg in args if isinstance(arg, Mul) and 
+                    not all([isinstance(i, LinearOperator) for i in arg.args])]
         if mul_args:
             arg = mul_args[0]
             index = originals.index(arg)
 
-            linops = [i for i in arg.args if isinstance(i, LinearOperator)]
+            linops = [i for i in arg.args if isinstance(i, (LinearOperator, Kron))]
             coeffs = [i for i in arg.args if i not in linops]
 
             linop = reduce(mul, linops)

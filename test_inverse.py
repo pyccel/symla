@@ -1,4 +1,5 @@
 from sympy import Symbol
+from sympy import Expr
 
 from symla.kronecker import FiniteVectorSpace
 from symla.kronecker import Matrix
@@ -26,23 +27,18 @@ def test_inverse_1():
     assert(Inverse(Kron(alpha*a,b)) == Kron(Inverse(a), Inverse(b))/alpha)
     assert(Inverse(Kron(alpha*a,beta*b)) == Kron(Inverse(a), Inverse(b))/(alpha*beta))
     assert(Inverse(Kron(alpha*a,beta*b,gamma*c)) == Kron(Inverse(a), Inverse(b), Inverse(c))/(alpha*beta*gamma))
+    
+    # Inverse of Inverse
+    assert(Inverse(Inverse(a)) == a)
+    assert(Inverse(Inverse(Inverse(a))) == Inverse(a))
+    assert(Inverse(a*b*Inverse(c)*d) == Inverse(d)*c*Inverse(b)*Inverse(a))
+    
+    # Inverse of Power
+    assert(Inverse(a**alpha) == Inverse(a) ** alpha)
 
-    expr = Inverse(a+b)
-    print(expr)
+
 
 #######################################
 if __name__ == '__main__':
 
     test_inverse_1()
-
-    # .....................................
-#    # TODO not working
-#    expr = Kron(a+d*a, beta*b*c)
-#    print(expr)
-#    print('')
-
-#    # TODO not working
-#    expr = Kron(alpha*a,Kron(b, gamma*c) + Kron(beta*b,d))
-#    print(expr)
-#    print('')
-    # .....................................
